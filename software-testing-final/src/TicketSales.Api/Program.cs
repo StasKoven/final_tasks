@@ -34,6 +34,16 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     await db.Database.EnsureCreatedAsync();
+
+    if (!db.Venues.Any())
+    {
+        db.Venues.AddRange(
+            new TicketSales.Domain.Venue { Name = "Main Arena", Address = "1 Arena Blvd", Capacity = 10000 },
+            new TicketSales.Domain.Venue { Name = "City Hall", Address = "2 City Center", Capacity = 500 },
+            new TicketSales.Domain.Venue { Name = "Open Air Stage", Address = "3 Park Ave", Capacity = 5000 }
+        );
+        await db.SaveChangesAsync();
+    }
 }
 
 app.MapControllers();
