@@ -36,8 +36,11 @@ export function getTicketByCode(code: string): RefinedResponse<ResponseType> {
   return http.get(ENDPOINTS.ticketByCode(code), { headers: HEADERS });
 }
 
-export function useTicket(code: string): RefinedResponse<ResponseType> {
-  return http.patch(ENDPOINTS.useTicket(code), null, { headers: HEADERS });
+export function useTicket(
+  code: string,
+  params?: Parameters<typeof http.patch>[2]
+): RefinedResponse<ResponseType> {
+  return http.patch(ENDPOINTS.useTicket(code), null, { headers: HEADERS, ...params });
 }
 
 export function getAttendees(eventId: number): RefinedResponse<ResponseType> {
