@@ -1,5 +1,6 @@
 ﻿// Smoke test: 1 VU, 30s - verify API is alive and basic ticket purchase flow works
 import { check, sleep } from "k6";
+import http from "k6/http";
 import { Options } from "k6/options";
 import { THRESHOLDS, EventResponse, TicketResponse, parseBody, randomEmail, futureDate } from "../helpers/config.ts";
 import {
@@ -66,7 +67,9 @@ export default function () {
       check(useRes, { "PATCH /api/tickets/{code}/use -> 200": (r) => r.status === 200 });
 
       // Try to use again (should fail - double-scan prevention)
-      const reUseRes = useTicket(code);
+      const reUseRes = useTicket(code, {
+        responseCallback: http.expectedStatuses(200, 409),
+      });
       check(reUseRes, { "PATCH /api/tickets/{code}/use (duplicate) -> 409": (r) => r.status === 409 });
     }
 

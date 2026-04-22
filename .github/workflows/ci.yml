@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: tickets
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    defaults:
+      run:
+        working-directory: software-testing-final
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        run: dotnet restore TicketSales.slnx
+
+      - name: Build
+        run: dotnet build TicketSales.slnx --no-restore
+
+      - name: Unit Tests
+        run: dotnet test tests/TicketSales.Api.Tests/TicketSales.Api.Tests.csproj --no-build --verbosity normal
+
+      - name: Integration Tests
+        run: dotnet test tests/TicketSales.Api.Tests.Integration/TicketSales.Api.Tests.Integration.csproj --no-build --verbosity normal
+
+      - name: Database Tests
+        run: dotnet test tests/TicketSales.Api.Tests.Database/TicketSales.Api.Tests.Database.csproj --no-build --verbosity normal
